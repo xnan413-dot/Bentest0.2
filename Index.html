@@ -57,13 +57,22 @@
                         <h1 class="text-3xl md:text-4xl font-bold text-white mb-2 flex items-center gap-3">
                             🚚 送貨模擬器
                         </h1>
-                        <p class="text-white/90 text-base">成為最佳送貨員！準時送達，賺取收入！</p>
+                        <p class="text-white/90 text-base" id="game-mode-text">成為最佳送貨員！準時送達，賺取收入！</p>
                     </div>
-                    <div class="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-3 text-white">
-                        <div class="text-sm opacity-90">等級</div>
-                        <div class="text-3xl font-bold" id="level">1</div>
-                        <div class="text-xs opacity-75 mt-1">
-                            <span id="level-progress">0</span>/<span id="level-target">10</span>
+                    <div class="flex gap-3">
+                        <div id="stage-info" class="hidden bg-white/20 backdrop-blur-sm rounded-lg px-4 py-3 text-white">
+                            <div class="text-sm opacity-90">當前關卡</div>
+                            <div class="text-2xl font-bold" id="current-stage-name">關卡 1</div>
+                            <div class="text-xs opacity-75 mt-1">
+                                📦 <span id="stage-progress-text">0/5</span> | ⏱️ <span id="stage-time-left">3:00</span>
+                            </div>
+                        </div>
+                        <div id="level-info" class="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-3 text-white">
+                            <div class="text-sm opacity-90">等級</div>
+                            <div class="text-3xl font-bold" id="level">1</div>
+                            <div class="text-xs opacity-75 mt-1">
+                                <span id="level-progress">0</span>/<span id="level-target">10</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -140,8 +149,11 @@
                     </div>
 
                     <div class="mt-6 space-y-2">
-                        <button id="start-btn" class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 px-4 rounded-lg transition text-base">
-                            🎮 開始遊戲
+                        <button id="stage-select-btn" class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 px-4 rounded-lg transition text-base">
+                            🎯 關卡選擇
+                        </button>
+                        <button id="start-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition text-base">
+                            🎮 自由模式
                         </button>
                         <button id="reset-btn" class="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition text-base">
                             🔄 重新開始
@@ -225,6 +237,107 @@
 
         <!-- Tutorial Highlight Overlay -->
         <div id="tutorial-highlight" class="hidden fixed pointer-events-none z-40" style="box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6); border-radius: 8px;"></div>
+
+        <!-- Stage Selection Modal -->
+        <div id="stage-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full p-6 md:p-8 max-h-[90vh] overflow-y-auto">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl md:text-3xl font-bold flex items-center gap-2">
+                        🎯 關卡選擇
+                    </h3>
+                    <button onclick="closeStageModal()" class="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div id="stage-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Stages will be added dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Stage Complete Modal -->
+        <div id="stage-complete-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full p-6 md:p-8 transform transition-all">
+                <div class="text-center">
+                    <div class="text-6xl mb-4">🎉</div>
+                    <h3 class="text-2xl md:text-3xl font-bold mb-4">關卡完成！</h3>
+
+                    <div class="mb-6">
+                        <div class="text-5xl mb-3" id="stage-stars-display">⭐⭐⭐</div>
+                        <div class="text-lg font-bold text-gray-700 dark:text-gray-300 mb-2" id="stage-complete-name">關卡 1</div>
+                    </div>
+
+                    <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 mb-6 space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600 dark:text-gray-400">完成時間</span>
+                            <span class="font-bold" id="stage-time-result">1:30</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600 dark:text-gray-400">配送數量</span>
+                            <span class="font-bold" id="stage-deliveries-result">10</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600 dark:text-gray-400">最終評分</span>
+                            <span class="font-bold" id="stage-rating-result">5.0</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600 dark:text-gray-400">收入</span>
+                            <span class="font-bold text-green-600" id="stage-money-result">HK$500</span>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button onclick="closeStageCompleteModal()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition text-base">
+                            返回
+                        </button>
+                        <button id="next-stage-btn" onclick="startNextStage()" class="flex-1 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-4 rounded-lg transition text-base">
+                            下一關
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stage Failed Modal -->
+        <div id="stage-failed-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full p-6 md:p-8 transform transition-all">
+                <div class="text-center">
+                    <div class="text-6xl mb-4">😢</div>
+                    <h3 class="text-2xl md:text-3xl font-bold mb-4 text-red-600 dark:text-red-400">關卡失敗</h3>
+
+                    <div class="text-gray-700 dark:text-gray-300 mb-6" id="stage-failed-reason">
+                        未達成目標要求
+                    </div>
+
+                    <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 mb-6 space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600 dark:text-gray-400">完成時間</span>
+                            <span class="font-bold" id="stage-failed-time">1:30</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600 dark:text-gray-400">配送數量</span>
+                            <span class="font-bold" id="stage-failed-deliveries">5/10</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600 dark:text-gray-400">最終評分</span>
+                            <span class="font-bold" id="stage-failed-rating">4.5</span>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button onclick="closeStageFailedModal()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition text-base">
+                            返回
+                        </button>
+                        <button onclick="retryStage()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition text-base">
+                            重試
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -255,7 +368,14 @@
             buildings: [],
             gameTimer: null,
             orderTimer: null,
-            unlockedAchievements: new Set()
+            unlockedAchievements: new Set(),
+            // Stage mode
+            stageMode: false,
+            currentStage: null,
+            stageProgress: {
+                unlockedStages: 1,
+                stageStars: {} // stageId: stars (1-3)
+            }
         };
 
         // Level configuration
@@ -271,6 +391,210 @@
             9: { target: 75, maxOrders: 7, orderInterval: 3000, timeBonus: 25, rewardMultiplier: 2.5 },
             10: { target: 100, maxOrders: 8, orderInterval: 2500, timeBonus: 30, rewardMultiplier: 3.0 }
         };
+
+        // Stage configuration
+        const stages = [
+            {
+                id: 1,
+                name: '新手訓練',
+                description: '完成基本配送訓練',
+                difficulty: '簡單',
+                icon: '🎯',
+                objectives: {
+                    deliveries: 5,
+                    timeLimit: 180, // 3 minutes
+                    minRating: 4.0
+                },
+                stars: {
+                    bronze: { deliveries: 5, time: 180, rating: 4.0 }, // 1 star
+                    silver: { deliveries: 5, time: 150, rating: 4.5 }, // 2 stars
+                    gold: { deliveries: 5, time: 120, rating: 4.8 }    // 3 stars
+                },
+                orderInterval: 8000,
+                maxOrders: 2,
+                rewardMultiplier: 1.0
+            },
+            {
+                id: 2,
+                name: '城市快遞',
+                description: '在繁忙的城市中完成配送',
+                difficulty: '簡單',
+                icon: '🏙️',
+                objectives: {
+                    deliveries: 8,
+                    timeLimit: 240,
+                    minRating: 4.2
+                },
+                stars: {
+                    bronze: { deliveries: 8, time: 240, rating: 4.2 },
+                    silver: { deliveries: 8, time: 200, rating: 4.6 },
+                    gold: { deliveries: 8, time: 160, rating: 4.8 }
+                },
+                orderInterval: 7000,
+                maxOrders: 3,
+                rewardMultiplier: 1.1
+            },
+            {
+                id: 3,
+                name: '時間挑戰',
+                description: '在限時內完成更多配送',
+                difficulty: '中等',
+                icon: '⏱️',
+                objectives: {
+                    deliveries: 10,
+                    timeLimit: 240,
+                    minRating: 4.3
+                },
+                stars: {
+                    bronze: { deliveries: 10, time: 240, rating: 4.3 },
+                    silver: { deliveries: 10, time: 200, rating: 4.6 },
+                    gold: { deliveries: 10, time: 170, rating: 4.9 }
+                },
+                orderInterval: 6000,
+                maxOrders: 3,
+                rewardMultiplier: 1.2
+            },
+            {
+                id: 4,
+                name: '完美配送',
+                description: '保持高評分完成配送',
+                difficulty: '中等',
+                icon: '⭐',
+                objectives: {
+                    deliveries: 12,
+                    timeLimit: 300,
+                    minRating: 4.5
+                },
+                stars: {
+                    bronze: { deliveries: 12, time: 300, rating: 4.5 },
+                    silver: { deliveries: 12, time: 250, rating: 4.7 },
+                    gold: { deliveries: 12, time: 210, rating: 4.9 }
+                },
+                orderInterval: 6000,
+                maxOrders: 4,
+                rewardMultiplier: 1.3
+            },
+            {
+                id: 5,
+                name: '效率大師',
+                description: '快速處理大量訂單',
+                difficulty: '中等',
+                icon: '🚀',
+                objectives: {
+                    deliveries: 15,
+                    timeLimit: 300,
+                    minRating: 4.4
+                },
+                stars: {
+                    bronze: { deliveries: 15, time: 300, rating: 4.4 },
+                    silver: { deliveries: 15, time: 260, rating: 4.7 },
+                    gold: { deliveries: 15, time: 220, rating: 4.9 }
+                },
+                orderInterval: 5500,
+                maxOrders: 4,
+                rewardMultiplier: 1.4
+            },
+            {
+                id: 6,
+                name: '夜間快遞',
+                description: '在夜間完成緊急配送',
+                difficulty: '困難',
+                icon: '🌙',
+                objectives: {
+                    deliveries: 18,
+                    timeLimit: 360,
+                    minRating: 4.5
+                },
+                stars: {
+                    bronze: { deliveries: 18, time: 360, rating: 4.5 },
+                    silver: { deliveries: 18, time: 300, rating: 4.7 },
+                    gold: { deliveries: 18, time: 250, rating: 4.9 }
+                },
+                orderInterval: 5000,
+                maxOrders: 5,
+                rewardMultiplier: 1.6
+            },
+            {
+                id: 7,
+                name: '極速狂飆',
+                description: '極限速度挑戰',
+                difficulty: '困難',
+                icon: '⚡',
+                objectives: {
+                    deliveries: 20,
+                    timeLimit: 300,
+                    minRating: 4.6
+                },
+                stars: {
+                    bronze: { deliveries: 20, time: 300, rating: 4.6 },
+                    silver: { deliveries: 20, time: 260, rating: 4.8 },
+                    gold: { deliveries: 20, time: 220, rating: 4.9 }
+                },
+                orderInterval: 4500,
+                maxOrders: 5,
+                rewardMultiplier: 1.8
+            },
+            {
+                id: 8,
+                name: '配送之王',
+                description: '證明你是最強送貨員',
+                difficulty: '困難',
+                icon: '👑',
+                objectives: {
+                    deliveries: 25,
+                    timeLimit: 360,
+                    minRating: 4.7
+                },
+                stars: {
+                    bronze: { deliveries: 25, time: 360, rating: 4.7 },
+                    silver: { deliveries: 25, time: 310, rating: 4.8 },
+                    gold: { deliveries: 25, time: 270, rating: 4.95 }
+                },
+                orderInterval: 4000,
+                maxOrders: 6,
+                rewardMultiplier: 2.0
+            },
+            {
+                id: 9,
+                name: '傳說挑戰',
+                description: '只有傳奇才能完成',
+                difficulty: '專家',
+                icon: '🏆',
+                objectives: {
+                    deliveries: 30,
+                    timeLimit: 420,
+                    minRating: 4.8
+                },
+                stars: {
+                    bronze: { deliveries: 30, time: 420, rating: 4.8 },
+                    silver: { deliveries: 30, time: 360, rating: 4.85 },
+                    gold: { deliveries: 30, time: 310, rating: 4.95 }
+                },
+                orderInterval: 3500,
+                maxOrders: 6,
+                rewardMultiplier: 2.5
+            },
+            {
+                id: 10,
+                name: '終極試煉',
+                description: '最終的極限挑戰',
+                difficulty: '專家',
+                icon: '💎',
+                objectives: {
+                    deliveries: 40,
+                    timeLimit: 480,
+                    minRating: 4.85
+                },
+                stars: {
+                    bronze: { deliveries: 40, time: 480, rating: 4.85 },
+                    silver: { deliveries: 40, time: 420, rating: 4.9 },
+                    gold: { deliveries: 40, time: 360, rating: 4.95 }
+                },
+                orderInterval: 3000,
+                maxOrders: 7,
+                rewardMultiplier: 3.0
+            }
+        ];
 
         // Building locations and names
         const buildingLocations = [
@@ -713,7 +1037,7 @@
                 b.element.classList.remove('ring-4', 'ring-primary', 'ring-offset-2');
             });
 
-            // Reset state
+            // Reset state (but keep stage progress)
             gameState.money = 0;
             gameState.completed = 0;
             gameState.rating = 5.0;
@@ -723,11 +1047,20 @@
             gameState.isRunning = false;
             gameState.currentDelivery = null;
             gameState.orders = [];
-            gameState.unlockedAchievements.clear();
+
+            // Only reset achievements in free mode
+            if (!gameState.stageMode) {
+                gameState.unlockedAchievements.clear();
+            }
 
             // Reset van position
             moveVan(10, 10);
             document.getElementById('position').textContent = '位置: 倉庫';
+
+            // Reset UI to normal mode
+            document.getElementById('stage-info').classList.add('hidden');
+            document.getElementById('level-info').classList.remove('hidden');
+            document.getElementById('game-mode-text').textContent = '成為最佳送貨員！準時送達，賺取收入！';
 
             // Update UI
             updateStats();
@@ -736,11 +1069,17 @@
             renderOrders();
             updateCurrentDelivery();
 
-            document.getElementById('start-btn').textContent = '🎮 開始遊戲';
+            document.getElementById('start-btn').textContent = '🎮 自由模式';
             document.getElementById('start-btn').disabled = false;
             document.getElementById('start-btn').classList.remove('opacity-50', 'cursor-not-allowed');
 
-            showNotification('🔄 遊戲已重置', 'info');
+            // Reset stage mode flag
+            gameState.stageMode = false;
+            gameState.currentStage = null;
+
+            if (!gameState.stageMode) {
+                showNotification('🔄 遊戲已重置', 'info');
+            }
         }
 
         // Tutorial System
@@ -1049,11 +1388,421 @@
             }
         });
 
+        // ========== STAGE SYSTEM FUNCTIONS ==========
+
+        // Show stage selection modal
+        function showStageSelection() {
+            renderStageList();
+            document.getElementById('stage-modal').classList.remove('hidden');
+        }
+
+        // Close stage selection modal
+        function closeStageModal() {
+            document.getElementById('stage-modal').classList.add('hidden');
+        }
+
+        // Render stage list
+        function renderStageList() {
+            const stageList = document.getElementById('stage-list');
+            stageList.innerHTML = '';
+
+            stages.forEach(stage => {
+                const isUnlocked = stage.id <= gameState.stageProgress.unlockedStages;
+                const stars = gameState.stageProgress.stageStars[stage.id] || 0;
+
+                const difficultyColors = {
+                    '簡單': 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300',
+                    '中等': 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300',
+                    '困難': 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300',
+                    '專家': 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                };
+
+                const stageCard = document.createElement('div');
+                stageCard.className = `relative bg-white dark:bg-gray-700 rounded-lg p-4 shadow transition-all ${
+                    isUnlocked ? 'cursor-pointer hover:shadow-xl hover:scale-105' : 'opacity-50'
+                }`;
+
+                if (isUnlocked) {
+                    stageCard.onclick = () => startStage(stage.id);
+                }
+
+                let starsDisplay = '';
+                for (let i = 0; i < 3; i++) {
+                    starsDisplay += i < stars ? '⭐' : '☆';
+                }
+
+                const minutes = Math.floor(stage.objectives.timeLimit / 60);
+                const seconds = stage.objectives.timeLimit % 60;
+                const timeText = seconds > 0 ? `${minutes}:${seconds.toString().padStart(2, '0')}` : `${minutes}:00`;
+
+                stageCard.innerHTML = `
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <div class="text-3xl">${stage.icon}</div>
+                            <div>
+                                <div class="font-bold text-lg">關卡 ${stage.id}</div>
+                                <div class="text-xs ${difficultyColors[stage.difficulty]} px-2 py-0.5 rounded-full inline-block mt-1">
+                                    ${stage.difficulty}
+                                </div>
+                            </div>
+                        </div>
+                        ${!isUnlocked ? '<div class="text-2xl">🔒</div>' : ''}
+                    </div>
+
+                    <h4 class="font-bold text-gray-900 dark:text-white mb-1">${stage.name}</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">${stage.description}</p>
+
+                    ${stars > 0 ? `
+                        <div class="text-center mb-3 text-xl">
+                            ${starsDisplay}
+                        </div>
+                    ` : ''}
+
+                    <div class="space-y-1 text-xs text-gray-600 dark:text-gray-400">
+                        <div class="flex justify-between">
+                            <span>📦 目標配送：</span>
+                            <span class="font-bold">${stage.objectives.deliveries} 單</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>⏱️ 時間限制：</span>
+                            <span class="font-bold">${timeText}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>⭐ 最低評分：</span>
+                            <span class="font-bold">${stage.objectives.minRating.toFixed(1)}</span>
+                        </div>
+                    </div>
+
+                    ${isUnlocked ? `
+                        <button class="w-full mt-3 bg-primary hover:bg-primary/90 text-white font-bold py-2 px-3 rounded text-sm transition">
+                            開始挑戰
+                        </button>
+                    ` : `
+                        <div class="w-full mt-3 bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 font-bold py-2 px-3 rounded text-sm text-center">
+                            未解鎖
+                        </div>
+                    `}
+                `;
+
+                stageList.appendChild(stageCard);
+            });
+        }
+
+        // Start a specific stage
+        function startStage(stageId) {
+            const stage = stages.find(s => s.id === stageId);
+            if (!stage) return;
+
+            if (stageId > gameState.stageProgress.unlockedStages) {
+                showNotification('⚠️ 請先完成前面的關卡！', 'warning');
+                return;
+            }
+
+            // Reset game state
+            resetGame();
+
+            // Set stage mode
+            gameState.stageMode = true;
+            gameState.currentStage = stage;
+
+            // Close modal
+            closeStageModal();
+
+            // Start game with stage configuration
+            startGameWithStageConfig(stage);
+
+            showNotification(`🎯 ${stage.name} 開始！`, 'info');
+        }
+
+        // Start game with stage configuration
+        function startGameWithStageConfig(stage) {
+            if (gameState.isRunning) return;
+
+            gameState.isRunning = true;
+            document.getElementById('start-btn').textContent = '⏸️ 遊戲進行中...';
+            document.getElementById('start-btn').disabled = true;
+            document.getElementById('start-btn').classList.add('opacity-50', 'cursor-not-allowed');
+
+            // Update header to show stage info
+            document.getElementById('stage-info').classList.remove('hidden');
+            document.getElementById('level-info').classList.add('hidden');
+            document.getElementById('current-stage-name').textContent = `${stage.icon} ${stage.name}`;
+            document.getElementById('game-mode-text').textContent = stage.description;
+            updateStageProgressDisplay();
+
+            // Game timer
+            gameState.gameTimer = setInterval(() => {
+                gameState.time++;
+                updateTime();
+                updateStageProgressDisplay();
+
+                // Check time limit in stage mode
+                if (gameState.stageMode && gameState.time >= stage.objectives.timeLimit) {
+                    checkStageCompletion();
+                }
+
+                // Update order timers
+                gameState.orders.forEach(order => {
+                    order.timeRemaining--;
+                    if (order.timeRemaining <= 0) {
+                        gameState.orders = gameState.orders.filter(o => o.id !== order.id);
+                        showNotification('📦 訂單已取消（超時）', 'warning');
+                    }
+                });
+
+                // Update current delivery timer
+                if (gameState.currentDelivery) {
+                    gameState.currentDelivery.timeRemaining--;
+                    updateCurrentDelivery();
+                }
+
+                renderOrders();
+            }, 1000);
+
+            // Start order generation with stage config
+            gameState.orderTimer = setInterval(() => {
+                if (gameState.orders.length < stage.maxOrders) {
+                    generateOrderWithMultiplier(stage.rewardMultiplier);
+                }
+            }, stage.orderInterval);
+
+            // Generate initial orders
+            generateOrderWithMultiplier(stage.rewardMultiplier);
+            setTimeout(() => generateOrderWithMultiplier(stage.rewardMultiplier), 3000);
+        }
+
+        // Update stage progress display in header
+        function updateStageProgressDisplay() {
+            if (!gameState.stageMode || !gameState.currentStage) return;
+
+            const stage = gameState.currentStage;
+            document.getElementById('stage-progress-text').textContent =
+                `${gameState.completed}/${stage.objectives.deliveries}`;
+
+            const timeLeft = Math.max(0, stage.objectives.timeLimit - gameState.time);
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('stage-time-left').textContent =
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Generate order with custom reward multiplier
+        function generateOrderWithMultiplier(multiplier) {
+            const availableBuildings = gameState.buildings.filter((b, i) =>
+                !gameState.orders.some(o => o.destination === i) &&
+                (!gameState.currentDelivery || gameState.currentDelivery.destination !== i)
+            );
+
+            if (availableBuildings.length === 0) return;
+
+            const randomBuilding = availableBuildings[Math.floor(Math.random() * availableBuildings.length)];
+            const buildingIndex = gameState.buildings.findIndex(b => b === randomBuilding);
+
+            const items = ['📦 包裹', '🍕 外賣', '📄 文件', '🎁 禮物', '🛍️ 購物', '💐 鮮花'];
+            const item = items[Math.floor(Math.random() * items.length)];
+
+            const baseReward = Math.floor(Math.random() * 30) + 20;
+            const reward = Math.floor(baseReward * multiplier);
+
+            const baseTime = Math.floor(Math.random() * 30) + 30;
+            const timeLimit = Math.max(20, baseTime);
+
+            const order = {
+                id: Date.now() + Math.random(),
+                item,
+                destination: buildingIndex,
+                destinationName: randomBuilding.name,
+                reward,
+                timeLimit,
+                timeRemaining: timeLimit
+            };
+
+            gameState.orders.push(order);
+            renderOrders();
+        }
+
+        // Check stage completion
+        function checkStageCompletion() {
+            if (!gameState.stageMode || !gameState.currentStage) return;
+
+            const stage = gameState.currentStage;
+            const objectives = stage.objectives;
+
+            // Stop game
+            if (gameState.gameTimer) clearInterval(gameState.gameTimer);
+            if (gameState.orderTimer) clearInterval(gameState.orderTimer);
+            gameState.isRunning = false;
+
+            // Check if objectives are met
+            const deliveriesMet = gameState.completed >= objectives.deliveries;
+            const timeMet = gameState.time <= objectives.timeLimit;
+            const ratingMet = gameState.rating >= objectives.minRating;
+
+            if (deliveriesMet && timeMet && ratingMet) {
+                // Calculate stars
+                let stars = 1; // Bronze
+                if (gameState.completed >= stage.stars.gold.deliveries &&
+                    gameState.time <= stage.stars.gold.time &&
+                    gameState.rating >= stage.stars.gold.rating) {
+                    stars = 3; // Gold
+                } else if (gameState.completed >= stage.stars.silver.deliveries &&
+                           gameState.time <= stage.stars.silver.time &&
+                           gameState.rating >= stage.stars.silver.rating) {
+                    stars = 2; // Silver
+                }
+
+                // Update progress
+                const previousStars = gameState.stageProgress.stageStars[stage.id] || 0;
+                if (stars > previousStars) {
+                    gameState.stageProgress.stageStars[stage.id] = stars;
+                }
+
+                // Unlock next stage
+                if (stage.id === gameState.stageProgress.unlockedStages && stage.id < stages.length) {
+                    gameState.stageProgress.unlockedStages = stage.id + 1;
+                }
+
+                showStageComplete(stars);
+            } else {
+                showStageFailed(deliveriesMet, timeMet, ratingMet);
+            }
+        }
+
+        // Show stage complete modal
+        function showStageComplete(stars) {
+            const stage = gameState.currentStage;
+
+            let starsDisplay = '';
+            for (let i = 0; i < stars; i++) {
+                starsDisplay += '⭐';
+            }
+
+            document.getElementById('stage-stars-display').textContent = starsDisplay;
+            document.getElementById('stage-complete-name').textContent = stage.name;
+
+            const minutes = Math.floor(gameState.time / 60);
+            const seconds = gameState.time % 60;
+            document.getElementById('stage-time-result').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('stage-deliveries-result').textContent = gameState.completed;
+            document.getElementById('stage-rating-result').textContent = gameState.rating.toFixed(1);
+            document.getElementById('stage-money-result').textContent = `HK$${gameState.money}`;
+
+            // Show/hide next stage button
+            const nextStageBtn = document.getElementById('next-stage-btn');
+            if (stage.id < stages.length) {
+                nextStageBtn.classList.remove('hidden');
+            } else {
+                nextStageBtn.classList.add('hidden');
+            }
+
+            document.getElementById('stage-complete-modal').classList.remove('hidden');
+        }
+
+        // Show stage failed modal
+        function showStageFailed(deliveriesMet, timeMet, ratingMet) {
+            const stage = gameState.currentStage;
+
+            let reasons = [];
+            if (!deliveriesMet) reasons.push(`📦 配送不足（${gameState.completed}/${stage.objectives.deliveries}）`);
+            if (!timeMet) reasons.push('⏱️ 超時');
+            if (!ratingMet) reasons.push(`⭐ 評分過低（${gameState.rating.toFixed(1)}/${stage.objectives.minRating.toFixed(1)}）`);
+
+            document.getElementById('stage-failed-reason').innerHTML = reasons.join('<br>');
+
+            const minutes = Math.floor(gameState.time / 60);
+            const seconds = gameState.time % 60;
+            document.getElementById('stage-failed-time').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('stage-failed-deliveries').textContent = `${gameState.completed}/${stage.objectives.deliveries}`;
+            document.getElementById('stage-failed-rating').textContent = gameState.rating.toFixed(1);
+
+            document.getElementById('stage-failed-modal').classList.remove('hidden');
+        }
+
+        // Close stage complete modal
+        function closeStageCompleteModal() {
+            document.getElementById('stage-complete-modal').classList.add('hidden');
+            showStageSelection();
+        }
+
+        // Close stage failed modal
+        function closeStageFailedModal() {
+            document.getElementById('stage-failed-modal').classList.add('hidden');
+            showStageSelection();
+        }
+
+        // Start next stage
+        function startNextStage() {
+            closeStageCompleteModal();
+            const nextStageId = gameState.currentStage.id + 1;
+            if (nextStageId <= stages.length) {
+                startStage(nextStageId);
+            }
+        }
+
+        // Retry current stage
+        function retryStage() {
+            closeStageFailedModal();
+            if (gameState.currentStage) {
+                startStage(gameState.currentStage.id);
+            }
+        }
+
+        // Modified complete delivery to check stage completion
+        const originalCompleteDelivery = completeDelivery;
+        completeDelivery = function() {
+            originalCompleteDelivery();
+
+            // Check if stage objectives are met after each delivery
+            if (gameState.stageMode && gameState.currentStage) {
+                const stage = gameState.currentStage;
+                if (gameState.completed >= stage.objectives.deliveries) {
+                    setTimeout(() => {
+                        checkStageCompletion();
+                    }, 1000);
+                }
+            }
+        };
+
         // Event listeners
         document.getElementById('start-btn').addEventListener('click', startGame);
         document.getElementById('reset-btn').addEventListener('click', resetGame);
+        document.getElementById('stage-select-btn').addEventListener('click', showStageSelection);
+
+        // Load saved stage progress from localStorage
+        function loadStageProgress() {
+            try {
+                const saved = localStorage.getItem('deliveryGameStageProgress');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    gameState.stageProgress.unlockedStages = data.unlockedStages || 1;
+                    gameState.stageProgress.stageStars = data.stageStars || {};
+                }
+            } catch (e) {
+                console.error('Failed to load stage progress:', e);
+            }
+        }
+
+        // Save stage progress to localStorage
+        function saveStageProgress() {
+            try {
+                localStorage.setItem('deliveryGameStageProgress', JSON.stringify({
+                    unlockedStages: gameState.stageProgress.unlockedStages,
+                    stageStars: gameState.stageProgress.stageStars
+                }));
+            } catch (e) {
+                console.error('Failed to save stage progress:', e);
+            }
+        }
+
+        // Modified showStageComplete to save progress
+        const originalShowStageComplete = showStageComplete;
+        showStageComplete = function(stars) {
+            originalShowStageComplete(stars);
+            saveStageProgress();
+        };
 
         // Initialize
+        loadStageProgress();
         initBuildings();
         updateStats();
         updateTime();
@@ -1061,3 +1810,5 @@
     </script>
 </body>
 </html>
+
+
